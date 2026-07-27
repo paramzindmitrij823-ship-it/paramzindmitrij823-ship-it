@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Игровое поле — Победи Венома</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{margin:0;padding:16px;background:#edeef0;text-align:center;
+font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+img{max-width:100%;height:auto;border-radius:8px}
+h3{color:#222}p{color:#777;font-size:13px}</style></head>
+<body><h3>🧩 Победи Венома</h3>
+<img id="f" src="field.png" alt="Игровое поле">
+<p>Синие ячейки закрыты, серые — пустые, золотые — призы найдены.<br>
+Страница обновляется сама. Номер ячейки пишите в комментариях под постом!</p>
+<script>setInterval(function(){
+  document.getElementById('f').src = 'field.png?ts=' + Date.now();
+}, 30000);</script></body></html>
