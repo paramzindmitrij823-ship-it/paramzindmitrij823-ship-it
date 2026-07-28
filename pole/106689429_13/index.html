@@ -1,0 +1,64 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<title>Игровое поле — Победи Венома</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{margin:0;padding:16px;background:#edeef0;color:#000;
+font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+.wrap{max-width:940px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px;text-align:center}
+.sub{text-align:center;color:#626d7a;font-size:13px;margin-bottom:14px}
+.grid{display:grid;gap:8px;margin:0 auto}
+.c{aspect-ratio:1/1;border-radius:8px;display:flex;align-items:center;
+justify-content:center;font-weight:600;font-size:17px;background:#5181b8;
+color:#fff;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+.c.e{background:#d7d8db;color:#7b7f86}
+.c.p{background:#ffc837;color:#7a540a;font-size:20px}
+.legend{margin-top:16px;text-align:center;color:#626d7a;font-size:13px;
+line-height:1.7}
+.dot{display:inline-block;width:12px;height:12px;border-radius:3px;
+vertical-align:-1px;margin-right:5px}
+</style></head><body><div class="wrap">
+<h1>🧩 Победи Венома</h1>
+<div class="sub" id="s">загружаю поле…</div>
+<div class="grid" id="g"></div>
+<div class="legend">
+<span class="dot" style="background:#5181b8"></span>закрыта &nbsp;
+<span class="dot" style="background:#d7d8db"></span>пусто &nbsp;
+<span class="dot" style="background:#ffc837"></span>приз найден<br>
+Номер ячейки пишите в комментариях под постом — страница обновляется сама.
+</div></div>
+<script>
+var RAW = "https://raw.githubusercontent.com/paramzindmitrij823-ship-it/paramzindmitrij823-ship-it/main/pole/106689429_13/state.json";
+var g = document.getElementById('g'), s = document.getElementById('s');
+function cols(n) {
+  return Math.min(10, Math.max(4, Math.round(Math.sqrt(n * 1.4))));
+}
+function render(d) {
+  var n = d.total || 0, c = cols(n), op = d.opened || {}, html = '';
+  g.style.gridTemplateColumns = 'repeat(' + c + ',minmax(0,1fr))';
+  g.style.maxWidth = (c * 78) + 'px';
+  for (var i = 1; i <= n; i++) {
+    var v = op[String(i)];
+    if (v === undefined) html += '<div class="c">' + i + '</div>';
+    else if (v === 1) html += '<div class="c p">★</div>';
+    else html += '<div class="c e">×</div>';
+  }
+  g.innerHTML = html;
+  var k = 0; for (var key in op) if (op.hasOwnProperty(key)) k++;
+  s.textContent = (d.done ? 'Конкурс завершён · ' : '') + 'Открыто ' + k +
+    ' из ' + n + ' · призов осталось ' + (d.prizes_left || 0) +
+    ' · обновлено ' + new Date().toLocaleTimeString('ru-RU');
+}
+function load() {
+  var t = Date.now();
+  fetch(RAW + '?ts=' + t, {cache: 'no-store'})
+    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+    .catch(function () {
+      return fetch('state.json?ts=' + t, {cache: 'no-store'})
+        .then(function (r) { return r.json(); });
+    })
+    .then(render).catch(function () {});
+}
+load();
+setInterval(load, 3000);
+</script></body></html>
