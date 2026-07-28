@@ -28,10 +28,25 @@ vertical-align:-1px;margin-right:5px}
 Номер ячейки пишите в комментариях под постом — страница обновляется сама.
 </div></div>
 <script>
-var RAW = "https://raw.githubusercontent.com/paramzindmitrij823-ship-it/paramzindmitrij823-ship-it/main/pole/106689429_13/state.json";
+var SOURCES = ["https://raw.githubusercontent.com/paramzindmitrij823-ship-it/paramzindmitrij823-ship-it/main/pole/106689429_13/state.json", "https://cdn.jsdelivr.net/gh/paramzindmitrij823-ship-it/paramzindmitrij823-ship-it@main/pole/106689429_13/state.json", "state.json"];
 var g = document.getElementById('g'), s = document.getElementById('s');
+var best = 0, lastData = null;
 function cols(n) {
   return Math.min(10, Math.max(4, Math.round(Math.sqrt(n * 1.4))));
+}
+function ago(sec) {
+  if (sec < 60) return 'секунду назад'.replace('секунду', sec + ' с');
+  if (sec < 3600) return Math.floor(sec / 60) + ' мин назад';
+  return Math.floor(sec / 3600) + ' ч назад';
+}
+function stamp() {
+  if (!lastData) return;
+  var d = lastData, k = 0, op = d.opened || {};
+  for (var key in op) if (op.hasOwnProperty(key)) k++;
+  var age = Math.max(0, Math.floor(Date.now() / 1000 - (d.ts || 0)));
+  s.textContent = (d.done ? 'Конкурс завершён · ' : '') + 'Открыто ' + k +
+    ' из ' + (d.total || 0) + ' · призов осталось ' + (d.prizes_left || 0) +
+    ' · данные ' + ago(age);
 }
 function render(d) {
   var n = d.total || 0, c = cols(n), op = d.opened || {}, html = '';
@@ -44,21 +59,26 @@ function render(d) {
     else html += '<div class="c e">×</div>';
   }
   g.innerHTML = html;
-  var k = 0; for (var key in op) if (op.hasOwnProperty(key)) k++;
-  s.textContent = (d.done ? 'Конкурс завершён · ' : '') + 'Открыто ' + k +
-    ' из ' + n + ' · призов осталось ' + (d.prizes_left || 0) +
-    ' · обновлено ' + new Date().toLocaleTimeString('ru-RU');
+  lastData = d;
+  stamp();
+}
+function apply(d) {
+  // источников несколько: какие-то у части провайдеров недоступны,
+  // какие-то отстают. Опрашиваем все и показываем самые свежие данные.
+  if (!d || !d.total || (d.ts || 0) <= best) return;
+  best = d.ts || 0;
+  render(d);
 }
 function load() {
   var t = Date.now();
-  fetch(RAW + '?ts=' + t, {cache: 'no-store'})
-    .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-    .catch(function () {
-      return fetch('state.json?ts=' + t, {cache: 'no-store'})
-        .then(function (r) { return r.json(); });
-    })
-    .then(render).catch(function () {});
+  SOURCES.forEach(function (u) {
+    if (!u) return;
+    fetch(u + (u.indexOf('?') > 0 ? '&' : '?') + 'ts=' + t, {cache: 'no-store'})
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(apply).catch(function () {});
+  });
 }
 load();
 setInterval(load, 3000);
+setInterval(stamp, 1000);
 </script></body></html>
